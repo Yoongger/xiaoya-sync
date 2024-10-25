@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * @Author Yoongger
  * @Date 2024/10/25 17:29
  * @Version 1.0.0
- * */
+ */
 @Service
 @Log4j2
 public class SyncService {
@@ -81,7 +81,16 @@ public class SyncService {
                 .readTimeout(5, TimeUnit.SECONDS)
                 .build();
 
-        for (String url : urls) {
+        Random random = new Random();
+        Set<String> triedUrls = new HashSet<>();
+
+        while (!triedUrls.containsAll(urls)) {
+            String url = urls.get(random.nextInt(urls.size()));
+            if (triedUrls.contains(url)) {
+                continue;
+            }
+            triedUrls.add(url);
+
             if (url.endsWith("/")) {
                 url = StringUtils.chop(url);
             }
@@ -93,15 +102,16 @@ public class SyncService {
 
                 try (Response response = client.newCall(request).execute()) {
                     if (response.isSuccessful()) {
-                        log.info("可用URL: " + url);
+                        log.info("可用 URL: " + url);
                         return url;
                     }
                 }
             } catch (Exception e) {
                 // Continue to next URL if this one is not reachable
-                log.error("URL无法访问: " + url, e);
+                log.error("URL 无法访问: " + url, e);
             }
         }
+
         // If no reachable URL is found, return a random one
         return urls.get(new Random().nextInt(urls.size()));
     }
@@ -264,8 +274,6 @@ public class SyncService {
         }
         userAgent = Util.userAgent();
         if (StringUtil.isBlank(baseUrl)) {
-            int randomNumber = Util.random.nextInt(allBaseUrl.size());
-            useBaseUrl = allBaseUrl.get(randomNumber);
             useBaseUrl = getReachableUrl(allBaseUrl);
         } else {
             useBaseUrl = baseUrl;
@@ -402,7 +410,7 @@ public class SyncService {
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                String replacedLine = line.replaceAll("(https?://)([a-zA-Z0-9.-]+)(:[0-9]+)?", dockerAddress);
+                String replacedLine = line.replaceAll("(https?://)([a-zA-Z0-9.-]+)(:[0-9]+)?", (dockerAddress.endsWith("/") ? StringUtils.chop(dockerAddress) : dockerAddress));
                 content.append(replacedLine).append(System.lineSeparator());
             }
             try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardOpenOption.TRUNCATE_EXISTING)) {
