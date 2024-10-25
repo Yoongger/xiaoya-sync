@@ -1,8 +1,8 @@
-package cn.jackding.xiaoyasync.util;
+package cn.yoongger.xiaoyasync.util;
 
-import cn.jackding.xiaoyasync.config.Config;
-import cn.jackding.xiaoyasync.tgbot.SyncBot;
-import cn.jackding.xiaoyasync.tgbot.TgSendMsg;
+import cn.yoongger.xiaoyasync.config.Config;
+import cn.yoongger.xiaoyasync.tgbot.SyncBot;
+import cn.yoongger.xiaoyasync.tgbot.TgSendMsg;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;

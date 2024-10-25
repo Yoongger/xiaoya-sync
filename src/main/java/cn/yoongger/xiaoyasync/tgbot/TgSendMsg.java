@@ -1,6 +1,6 @@
-package cn.jackding.xiaoyasync.tgbot;
+package cn.yoongger.xiaoyasync.tgbot;
 
-import cn.jackding.xiaoyasync.config.Config;
+import cn.yoongger.xiaoyasync.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;

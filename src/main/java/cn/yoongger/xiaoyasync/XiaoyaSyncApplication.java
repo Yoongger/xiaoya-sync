@@ -1,6 +1,6 @@
-package cn.jackding.xiaoyasync;
+package cn.yoongger.xiaoyasync;
 
-import cn.jackding.xiaoyasync.util.Util;
+import cn.yoongger.xiaoyasync.util.Util;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;

@@ -1,7 +1,7 @@
-package cn.jackding.xiaoyasync.tgbot;
+package cn.yoongger.xiaoyasync.tgbot;
 
-import cn.jackding.xiaoyasync.SyncService;
-import cn.jackding.xiaoyasync.util.SpringContextUtil;
+import cn.yoongger.xiaoyasync.SyncService;
+import cn.yoongger.xiaoyasync.util.SpringContextUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.telegram.abilitybots.api.db.DBContext;
 import org.telegram.abilitybots.api.sender.MessageSender;

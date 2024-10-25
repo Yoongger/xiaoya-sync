@@ -1,6 +1,6 @@
-package cn.jackding.xiaoyasync;
+package cn.yoongger.xiaoyasync;
 
-import cn.jackding.xiaoyasync.util.Util;
+import cn.yoongger.xiaoyasync.util.Util;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,7 +21,7 @@ public class ScheduledTask {
     /**
      * 每日更新
      */
-    @Scheduled(cron = "0 0 6,18 * * ?")
+    @Scheduled(cron = "${cron.daily}")
     public void syncUpdatedDaily() {
         Util.randomSleep();
         syncService.syncFiles("每日更新/");
@@ -30,10 +30,8 @@ public class ScheduledTask {
     /**
      * 全量同步
      */
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 3, initialDelay = 1000 * 60 * 60 * 24 * 3)
+    @Scheduled(cron = "${cron.all}")
     public void syncAll() {
         syncService.syncFiles("");
     }
-
-
 }

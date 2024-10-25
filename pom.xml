@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -8,7 +9,7 @@
         <version>2.7.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>cn.jackding</groupId>
+    <groupId>cn.yoongger</groupId>
     <artifactId>xiaoya-sync</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>xiaoya-sync</name>
@@ -101,7 +102,7 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>application</finalName>
+        <finalName>xiaoyasync</finalName>
     </build>
 
 </project>

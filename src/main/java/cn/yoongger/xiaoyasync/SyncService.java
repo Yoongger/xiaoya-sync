@@ -1,6 +1,6 @@
-package cn.jackding.xiaoyasync;
+package cn.yoongger.xiaoyasync;
 
-import cn.jackding.xiaoyasync.util.Util;
+import cn.yoongger.xiaoyasync.util.Util;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -13,12 +13,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,52 +42,69 @@ import java.util.stream.Collectors;
 @Log4j2
 public class SyncService {
 
-    @Value("${syncUrl}")
-    private String baseUrl;
-
-    private String useBaseUrl;
-
-    @Value("${mediaLibDir}")
-    private String localDir;
-
-    @Value("#{'${excludeList}'.split(',')}")
-    private List<String> excludeList;
-
-    @Value("${threadPoolNum:99}")
-    private int threadPoolNum;
-
-    @Value("${syncDir}")
-    private String syncDir;
-
-    @Value("${retryDownEmptyFile:0}")
-    private String retryDownEmptyFile;
-
-    //在这个列表里面的就会执行删除操作
-    private List<String> syncList = Arrays.asList("115/.*,PikPak/.*,动漫/.*,每日更新/.*,电影/.*,电视剧/.*,纪录片/.*,纪录片（已刮削）/.*,综艺/.*,音乐/.*,\uD83D\uDCFA画质演示测试（4K，8K，HDR，Dolby）/.*".split(","));
-
-    //这个是全部元数据的网站列表  在这个列表里面就同步全部元数据并且删除过时数据 否则不会删除
-    private final List<String> allBaseUrl = Arrays.asList("https://icyou.eu.org/,https://emby.8.net.co/,https://emby.raydoom.tk/,https://emby.kaiserver.uk/,https://embyxiaoya.laogl.top/,https://emby.xiaoya.pro/,https://emby-data.raydoom.tk/,https://emby-data.5168168.xyz/,https://emby-data.ermaokj.com/,https://emby-data.tmxy.pp.ua/,https://emby-data.poxi1221.eu.org/".split(","));
-
-    private volatile String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0";
-
-    //下载文件线程池 设置小一点 防止下载太快被风控
-    private ThreadPoolExecutor executorService;
-
-    //处理网站文件线程池
-    private ThreadPoolExecutor pool;
-
-    private volatile long currentTimeMillis;
-
-    private CopyOnWriteArrayList<String> downloadFiles;
-
-    private ConnectionPool connectionPool;
-
-    private OkHttpClient client;
-
-    private volatile String run;
-
     // // 创建 Pattern 对象
     private static final Pattern pattern = Pattern.compile("<a href=\"(.*?)\">(.*?)</a>\\s+(\\d{2}-[A-Za-z]{3}-\\d{4} \\d{2}:\\d{2})");
+    //这个是全部元数据的网站列表  在这个列表里面就同步全部元数据并且删除过时数据 否则不会删除
+    private final List<String> allBaseUrl = Arrays.asList("https://icyou.eu.org/,https://emby.8.net.co/,https://emby.raydoom.tk/,https://emby.kaiserver.uk/,https://embyxiaoya.laogl.top/,https://emby.xiaoya.pro/,https://emby-data.raydoom.tk/,https://emby-data.5168168.xyz/,https://emby-data.ermaokj.com/,https://emby-data.tmxy.pp.ua/,https://emby-data.poxi1221.eu.org/".split(","));
+    //在这个列表里面的就会执行删除操作
+    private final List<String> syncList = Arrays.asList("115/.*,PikPak/.*,动漫/.*,每日更新/.*,电影/.*,电视剧/.*,纪录片/.*,纪录片（已刮削）/.*,综艺/.*,音乐/.*,\uD83D\uDCFA画质演示测试（4K，8K，HDR，Dolby）/.*".split(","));
+    @Value("${syncUrl}")
+    private String baseUrl;
+    private String useBaseUrl;
+    @Value("${mediaLibDir}")
+    private String localDir;
+    @Value("#{'${excludeList}'.split(',')}")
+    private List<String> excludeList;
+    @Value("${threadPoolNum:99}")
+    private int threadPoolNum;
+    @Value("${syncDir}")
+    private String syncDir;
+    @Value("${retryDownEmptyFile:0}")
+    private String retryDownEmptyFile;
+    @Value("${dockerAddress}")
+    private String dockerAddress;
+    private volatile String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0";
+    //下载文件线程池 设置小一点 防止下载太快被风控
+    private ThreadPoolExecutor executorService;
+    //处理网站文件线程池
+    private ThreadPoolExecutor pool;
+    private volatile long currentTimeMillis;
+    private CopyOnWriteArrayList<String> downloadFiles;
+    private ConnectionPool connectionPool;
+    private OkHttpClient client;
+    private volatile String run;
+
+    private static String getReachableUrl(List<String> urls) {
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectionPool(new ConnectionPool(5, 5, TimeUnit.MINUTES))
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.SECONDS)
+                .build();
+
+        for (String url : urls) {
+            if (url.endsWith("/")) {
+                url = StringUtils.chop(url);
+            }
+            try {
+                Request request = new Request.Builder()
+                        .url(url)
+                        .head()
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    if (response.isSuccessful()) {
+                        log.info("可用URL: " + url);
+                        return url;
+                    }
+                }
+            } catch (Exception e) {
+                // Continue to next URL if this one is not reachable
+                log.error("URL无法访问: " + url, e);
+            }
+        }
+        // If no reachable URL is found, return a random one
+        return urls.get(new Random().nextInt(urls.size()));
+    }
 
     /**
      * 同步媒体库
@@ -244,8 +264,9 @@ public class SyncService {
         }
         userAgent = Util.userAgent();
         if (StringUtil.isBlank(baseUrl)) {
-            int randomNumber = Util.random.nextInt(allBaseUrl.size());
-            useBaseUrl = allBaseUrl.get(randomNumber);
+//            int randomNumber = Util.random.nextInt(allBaseUrl.size());
+//            useBaseUrl = allBaseUrl.get(randomNumber);
+            useBaseUrl = getReachableUrl(allBaseUrl);
         } else {
             useBaseUrl = baseUrl;
         }
@@ -337,6 +358,10 @@ public class SyncService {
                     }
                     fileChannel.transferFrom(rbc, 0, Long.MAX_VALUE);
                     log.debug("下载文件成功localDir:{} Downloaded: {}", localDir, localFileName);
+                    //判断localFileName 是否以.strm结尾
+                    if (localFileName.endsWith(".strm")) {
+                        processFile(localDir, localFileName, dockerAddress);
+                    }
                     downloadFiles.add(localDir.endsWith(File.separator) ? localDir + localFileName : localDir + File.separator + localFileName);
                     break;
                 }
@@ -354,7 +379,38 @@ public class SyncService {
                 userAgent = Util.userAgent();
             }
         }
+    }
 
+    public void processFile(String localDir, String localFileName, String dockerAddress) {
+        Path localFilePath = getNormalizedFilePath(localDir, localFileName);
+
+        // 确保文件路径在预期的目录内
+        if (!localFilePath.startsWith(Paths.get(localDir))) {
+            log.debug("文件{}不存在", localFilePath);
+        }
+
+        replaceUrlsInFile(localFilePath, dockerAddress);
+    }
+
+    private Path getNormalizedFilePath(String localDir, String localFileName) {
+        Path localDirPath = Paths.get(localDir);
+        return localDirPath.resolve(localFileName).normalize();
+    }
+
+    private void replaceUrlsInFile(Path filePath, String dockerAddress) {
+        try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String replacedLine = line.replaceAll("(https?://)([a-zA-Z0-9.-]+)(:[0-9]+)?", dockerAddress);
+                content.append(replacedLine).append(System.lineSeparator());
+            }
+            try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardOpenOption.TRUNCATE_EXISTING)) {
+                writer.write(content.toString());
+            }
+        } catch (IOException e) {
+            log.error("处理文件时发生错误：{}", e.getMessage(), e);
+        }
     }
 
     private boolean shouldDelete(String relativePath) {
@@ -512,5 +568,4 @@ public class SyncService {
         }
 
     }
-
 }
