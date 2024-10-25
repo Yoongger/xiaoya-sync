@@ -34,10 +34,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * @Author Jack
- * @Date 2024/5/17 22:51
+ * @Author Yoongger
+ * @Date 2024/10/25 17:29
  * @Version 1.0.0
- */
+ * */
 @Service
 @Log4j2
 public class SyncService {
@@ -264,8 +264,8 @@ public class SyncService {
         }
         userAgent = Util.userAgent();
         if (StringUtil.isBlank(baseUrl)) {
-//            int randomNumber = Util.random.nextInt(allBaseUrl.size());
-//            useBaseUrl = allBaseUrl.get(randomNumber);
+            int randomNumber = Util.random.nextInt(allBaseUrl.size());
+            useBaseUrl = allBaseUrl.get(randomNumber);
             useBaseUrl = getReachableUrl(allBaseUrl);
         } else {
             useBaseUrl = baseUrl;
