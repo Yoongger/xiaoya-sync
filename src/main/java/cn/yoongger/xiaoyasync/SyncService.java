@@ -121,7 +121,7 @@ public class SyncService {
         for (int i = 0; ; i++) {
             init();
             try {
-                log.info("媒体库同步任务开始");
+                log.info("媒体库{}同步任务开始", syncDir);
                 Util.sendTgMsg("媒体库同步任务开始");
                 log.info("排除列表：{}", excludeList);
                 syncFilesRecursively(useBaseUrl + Util.encode(syncDir), localDir + syncDir.replace("/", File.separator).replaceAll("[:*?\"<>|]", "_"), syncDir);
