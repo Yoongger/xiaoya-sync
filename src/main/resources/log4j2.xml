@@ -67,7 +67,7 @@
             <AppenderRef ref="ROLLING_FILE" />
         </AsyncRoot>
 
-        <AsyncLogger name="cn.jackding" level="debug" additivity="false">
+        <AsyncLogger name="cn.yoongger" level="debug" additivity="false">
             <AppenderRef ref="CONSOLE"/>
             <AppenderRef ref="ROLLING_FILE" />
         </AsyncLogger>
