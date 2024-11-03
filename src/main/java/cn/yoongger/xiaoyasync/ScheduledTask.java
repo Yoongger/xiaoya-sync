@@ -21,7 +21,7 @@ public class ScheduledTask {
     /**
      * 每日更新
      */
-    @Scheduled(cron = "0 0 6,18 * * ?")
+    @Scheduled(cron = "${cron}")
     public void syncUpdatedDaily() {
         Util.randomSleep();
         syncService.syncFiles("每日更新/");
@@ -30,8 +30,9 @@ public class ScheduledTask {
     /**
      * 全量同步
      */
-    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 3, initialDelay = 1000 * 60 * 60)
+    @Scheduled(cron = "${cronAll}")
     public void syncAll() {
+        log.info("${cronAll} start");
         syncService.syncFiles("");
     }
 }

@@ -14,4 +14,5 @@ ENV tgUserName="bot"
 ENV logLevel=""
 ENV retryDownEmptyFile="0"
 ENV JAVA_OPTS="-Xms32m -Xmx512m"
+ENV logLevel="INFO"
 ENTRYPOINT ["sh","-c","java -jar $JAVA_OPTS -XX:+UseG1GC -XX:+OptimizeStringConcat -XX:+PrintGCDetails -Xloggc:/log/gc.log -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/log /xiaoyasync.jar"]

@@ -24,7 +24,6 @@ public class XiaoyaSyncApplication {
     @Value("${logLevel:}")
     private String logLevel;
 
-
     public static void main(String[] args) {
         SpringApplication.run(XiaoyaSyncApplication.class, args);
     }
