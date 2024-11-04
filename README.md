@@ -2,7 +2,7 @@
 
 同步小雅emby媒体库。(forked from https://github.com/907739769/xiaoya-sync)
 
-每日更新数据每天6点18点同步，服务启动也会执行一次。全量数据同步，每三天同步一次。
+每日更新数据每天6点18点同步，服务启动也会执行一次。全量数据同步，每三天同步一次。(修改为使用定时任务表达式设置)
 
 自动删除本地过时文件夹及文件（小雅媒体库网站不存在的文件及文件夹，不会删除其他目录的文件），网站上面文件的和本地
 同名文件不会删除，防止网站没有nfo等文件，但是本地有nfo等文件，导致误删nfo等文件
@@ -33,7 +33,7 @@ PikPak/
 /volume1/docker/xiaoya/media 修改成媒体库路径
 可选参数
 runAfterStartup  启动是否立即执行同步任务 默认不启用0，启用填1
-dockerAddress 本地docker地址 默认留空不修改 格式 http://192.168.1.1:5678
+dockerAddress 本地小雅docker地址 默认留空不修改 格式 http://192.168.1.1:5678
 excludeList 排除列表 默认为空 设置不进行同步及删除的目录例如每日更新/动漫/.*,每日更新/动漫剧场版/.*
 syncUrl 同步网站 不填默认从网站池中随机选一个可以访问的地址  可选https://icyou.eu.org/或者https://lanyuewan.cn/
 syncDir 同步路径 指定同步路径 默认空 同步全站，可填入 每日更新/电影/ 或者 每日更新/  等具体的网站路径
@@ -44,6 +44,8 @@ logLevel 日志级别 DEBUG INFO ERROR OFF
 JAVA_OPTS 设置JVM参数  默认-Xms32m -Xmx512m
 retryDownEmptyFile 是否重新下载本地0KB大小的文件 默认不启用0，启用填1
 threadPoolNum 线程池数量 默认99
+cron 每日更新定时任务表达式 默认为每天6点18点各同步一次 格式 0 0 6,18 * * ?
+cronAll 全量更新定时任务表达式 默认为每三天3点同步一次 格式 0 0 3 1/3 * ?
 ```
 
 一键命令部署
@@ -72,6 +74,8 @@ docker run -d \
 -e threadPoolNum="99" \
 -e syncUrl="" \
 -e syncDir="" \
+-e cron="0 0 6,18 * * ?" \
+-e cronAll="0 0 3 1/3 * ?" \
 -v /volume1/docker/xiaoya/media:/data \
 -v /volume1/docker/xiaoya-sync/log:/log \
 yoongger/xiaoya-sync:latest
@@ -94,6 +98,8 @@ services:
       threadPoolNum: 99
       syncUrl: ""
       syncDir: ""
+      cron: "0 12 18 * * ?"
+      cronAll: "0 0 3 1/3 * ?"
     volumes:
       - /volume1/docker/xiaoya/data:/data
       - /volume1/docker/xiaoya-sync/log:/log

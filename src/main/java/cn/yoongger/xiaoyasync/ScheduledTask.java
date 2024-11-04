@@ -32,7 +32,6 @@ public class ScheduledTask {
      */
     @Scheduled(cron = "${cronAll}")
     public void syncAll() {
-        log.info("${cronAll} start");
         syncService.syncFiles("");
     }
 }
