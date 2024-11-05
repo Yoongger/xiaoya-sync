@@ -98,7 +98,7 @@ services:
       threadPoolNum: 99
       syncUrl: ""
       syncDir: ""
-      cron: "0 12 18 * * ?"
+      cron: "0 0 6,18 * * ?"
       cronAll: "0 0 3 1/3 * ?"
     volumes:
       - /volume1/docker/xiaoya/data:/data
